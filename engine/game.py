@@ -319,14 +319,19 @@ class Game:
                 return False
             self.player.invulnerability_timer = 1.0
             self.show_damage_tip(source)
-            self.audio.play_sfx("hit")
+            Game.play_hit_sfx(self)
             return True
         damaged = self.player.damage()
         if damaged:
-            self.audio.play_sfx("hit")
+            Game.play_hit_sfx(self)
             if self.progression.sector == 1:
                 self.show_damage_tip(source)
         return damaged
+
+    def play_hit_sfx(self):
+        audio = getattr(self, "audio", None)
+        if audio:
+            audio.play_sfx("hit")
 
     def show_damage_tip(self, source):
         self.damage_tip_timer = 5.5
