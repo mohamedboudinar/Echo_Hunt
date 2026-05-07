@@ -18,8 +18,7 @@ cd echo_hunt
 Windows PowerShell:
 ```powershell
 python -m venv venv
-.\
-env\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 ```
 
 Windows Command Prompt:
