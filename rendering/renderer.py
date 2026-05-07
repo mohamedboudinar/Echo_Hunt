@@ -1,3 +1,4 @@
+import math
 import pygame
 from config import BACKGROUND_COLOR, GRID_COLOR, TILE_WIDTH, TILE_HEIGHT
 from rendering.iso import IsoProjector
@@ -127,6 +128,28 @@ class Renderer:
             pygame.draw.rect(self.alpha_surface, color, (x, y, 2, 2))
         self.screen.blit(self.alpha_surface, (0, 0))
 
+    def draw_menu_animation(self):
+        width, _ = self.screen.get_size()
+        tick = pygame.time.get_ticks() / 1000.0
+        self.alpha_surface.fill((0, 0, 0, 0))
+        for ring in range(4):
+            angle = tick * (0.7 + ring * 0.14)
+            radius = 140 + ring * 40
+            color = (24, 200 + ring * 8, 255 - ring * 20, 48)
+            points = []
+            for step in range(60):
+                theta = angle + step * (2 * math.pi / 60)
+                x = int(width // 2 + math.cos(theta) * (radius + 6 * math.sin(tick * 1.6 + step * 0.2)))
+                y = int(240 + math.sin(theta) * (radius * 0.35 + 4 * math.cos(tick * 1.2 + step * 0.3)))
+                points.append((x, y))
+            pygame.draw.aalines(self.alpha_surface, color, True, points)
+        for i in range(10):
+            x = int(width // 2 + math.sin(tick * 1.8 + i * 0.7) * 280)
+            y = int(240 + math.cos(tick * 1.2 + i * 0.9) * 24)
+            alpha = 128 if i % 2 == 0 else 72
+            pygame.draw.circle(self.alpha_surface, (0, 255, 255, alpha), (x, y), 6)
+        self.screen.blit(self.alpha_surface, (0, 0))
+
     def draw_button(self, action, text, center, width=360, height=54, accent=(0, 255, 220)):
         rect = pygame.Rect(0, 0, width, height)
         rect.center = center
@@ -150,17 +173,19 @@ class Renderer:
         self.button_rects = {}
         self.draw_overlay(205)
         self.draw_synth_noise(52)
+        self.draw_menu_animation()
         width, _ = self.screen.get_size()
         pygame.draw.line(self.screen, (255, 80, 165), (width // 2 - 300, 190), (width // 2 + 300, 190), 3)
-        pygame.draw.line(self.screen, (0, 255, 255), (width // 2 - 220, 760), (width // 2 + 220, 760), 2)
+        pygame.draw.line(self.screen, (0, 255, 255), (width // 2 - 220, 850), (width // 2 + 220, 850), 2)
         self.draw_center_text("ECHO HUNT", 245, (0, 255, 255), 80)
         self.draw_center_text("A* SMART PURSUIT SURVIVAL", 325, (255, 110, 175), 30)
         self.draw_center_text("Reach the green EXIT. Avoid hunters, red hazards, and moving walls.", 382, (235, 245, 255), 24)
         self.draw_center_text("You win a sector by escaping. You lose when your hearts reach zero.", 426, (255, 220, 80), 24)
         self.draw_name_entry(player_name, (width // 2, 535), name_active)
         self.draw_button("start", "START RUN  [Enter]", (width // 2, 645), accent=(0, 255, 220))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 720), accent=(255, 90, 120))
-        self.draw_center_text(f"Controls: {move_label} move | Shift sprint | Space dash | Esc pause | T tutorial", 800, (210, 230, 255), 21)
+        self.draw_button("settings", "SETTINGS", (width // 2, 710), accent=(255, 220, 80))
+        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 780), accent=(255, 90, 120))
+        self.draw_center_text(f"Controls: {move_label} move | Shift sprint | Space dash | Esc pause | T tutorial", 920, (210, 230, 255), 21)
         self.draw_high_scores(high_scores or [], (70, 455))
 
     def draw_name_entry(self, player_name, center, active=False):
@@ -198,9 +223,10 @@ class Renderer:
         self.draw_synth_noise(34)
         width, _ = self.screen.get_size()
         self.draw_center_text("PAUSED", 330, (255, 220, 80), 58)
-        self.draw_button("resume", "RESUME  [Esc]", (width // 2, 440), accent=(0, 255, 220))
-        self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 515), accent=(255, 220, 80))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 590), accent=(255, 90, 120))
+        self.draw_button("resume", "RESUME  [Esc]", (width // 2, 420), accent=(0, 255, 220))
+        self.draw_button("settings", "SETTINGS", (width // 2, 500), accent=(255, 220, 80))
+        self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 580), accent=(255, 220, 80))
+        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 660), accent=(255, 90, 120))
 
     def draw_game_over(self, sector, survival_time, high_scores=None):
         self.button_rects = {}
@@ -215,6 +241,36 @@ class Renderer:
         self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 625), accent=(255, 220, 80))
         self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 700), accent=(255, 90, 120))
         self.draw_high_scores(high_scores or [], (70, 455))
+
+    def draw_settings(self, music_on, sfx_on, music_vol, sfx_vol):
+        self.button_rects = {}
+        self.draw_overlay(205)
+        self.draw_synth_noise(46)
+        width, _ = self.screen.get_size()
+        self.draw_center_text("SETTINGS", 240, (0, 255, 255), 72)
+        self.draw_center_text("Audio options for background music and sound effects.", 320, (255, 220, 80), 26)
+        self.draw_button(
+            "toggle_music",
+            f"MUSIC: {'ON' if music_on else 'OFF'}",
+            (width // 2, 470),
+            width=560,
+            accent=(0, 255, 220),
+        )
+        self.draw_text(f"MUSIC VOLUME: {int(music_vol * 100)}%", (width // 2, 540), (235, 245, 255))
+        self.draw_button("music_decrease", "-", (width // 2 - 120, 600), width=120, accent=(255, 90, 120))
+        self.draw_button("music_increase", "+", (width // 2 + 120, 600), width=120, accent=(0, 255, 220))
+        self.draw_button(
+            "toggle_sfx",
+            f"SFX: {'ON' if sfx_on else 'OFF'}",
+            (width // 2, 730),
+            width=560,
+            accent=(255, 220, 80),
+        )
+        self.draw_text(f"SFX VOLUME: {int(sfx_vol * 100)}%", (width // 2, 800), (235, 245, 255))
+        self.draw_button("sfx_decrease", "-", (width // 2 - 120, 860), width=120, accent=(255, 90, 120))
+        self.draw_button("sfx_increase", "+", (width // 2 + 120, 860), width=120, accent=(0, 255, 220))
+        self.draw_button("back", "BACK TO MENU  [Esc]", (width // 2, 940), accent=(255, 90, 120))
+        self.draw_text("Click the buttons to mute/unmute audio and change volume.", (width // 2 - 430, 1000), (235, 245, 255))
 
     def draw_objective_box(self, move_label="WASD", sector=1):
         rect = pygame.Rect(20, 15, 980, 118)

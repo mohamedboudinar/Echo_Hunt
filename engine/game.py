@@ -17,6 +17,7 @@ from ui.minimap import Minimap
 from engine.progression import ProgressionSystem
 from engine.save_manager import SaveManager
 from engine.high_scores import HighScoreManager
+from engine.audio_manager import AudioManager
 from generation.dungeon_generator import DungeonGenerator
 from generation.dynamic_obstacles import DynamicObstacleManager
 from generation.tilemap import TileType
@@ -51,6 +52,8 @@ class Game:
         self.save_manager = SaveManager()
         self.high_scores = HighScoreManager()
         self.high_score_entries = self.high_scores.load()
+        self.audio = AudioManager()
+        self.settings_return_state = GameState.MENU
         loaded = self.save_manager.load()
         self.progression.sector = loaded.get("sector", 1)
         self.player_name = ""
@@ -194,6 +197,7 @@ class Game:
         if self.input_handler.dash_pressed() and self.player.start_dash(dx, dy):
             self.tutorial_objectives["dash"] = True
             self.screen_shake.trigger(6, 0.15)
+            self.audio.play_sfx("dash")
         if self.player.dash_timer > 0:
             self.try_move_player(self.player.dash_dir_x, self.player.dash_dir_y, self.player.dash_speed, dt)
             self.dash_trail.add(self.player.grid_x, self.player.grid_y)
@@ -219,6 +223,7 @@ class Game:
         self.camera.update(tx, ty)
         if self.player.hearts <= 0:
             self.submit_score()
+            self.audio.play_game_over()
             self.state_manager.set_state(GameState.GAME_OVER)
 
     def submit_score(self):
@@ -247,6 +252,27 @@ class Game:
                 self.restart_run()
         if clicked_action == "start" and self.state_manager.current_state == GameState.MENU:
             self.start_new_run()
+        if clicked_action == "settings" and self.state_manager.current_state in (GameState.MENU, GameState.PAUSED):
+            self.settings_return_state = self.state_manager.current_state
+            self.state_manager.set_state(GameState.SETTINGS)
+            self.audio.play_sfx("menu")
+        if clicked_action == "toggle_music" and self.state_manager.current_state == GameState.SETTINGS:
+            self.audio.play_sfx("menu")
+            self.audio.set_music_enabled(not self.audio.music_enabled)
+        if clicked_action == "music_decrease" and self.state_manager.current_state == GameState.SETTINGS:
+            self.audio.set_music_volume(self.audio.music_volume - 0.10)
+        if clicked_action == "music_increase" and self.state_manager.current_state == GameState.SETTINGS:
+            self.audio.set_music_volume(self.audio.music_volume + 0.10)
+        if clicked_action == "toggle_sfx" and self.state_manager.current_state == GameState.SETTINGS:
+            self.audio.play_sfx("menu")
+            self.audio.set_sfx_enabled(not self.audio.sfx_enabled)
+        if clicked_action == "sfx_decrease" and self.state_manager.current_state == GameState.SETTINGS:
+            self.audio.set_sfx_volume(self.audio.sfx_volume - 0.10)
+        if clicked_action == "sfx_increase" and self.state_manager.current_state == GameState.SETTINGS:
+            self.audio.set_sfx_volume(self.audio.sfx_volume + 0.10)
+        if clicked_action == "back" and self.state_manager.current_state == GameState.SETTINGS:
+            self.state_manager.set_state(self.settings_return_state)
+            self.audio.play_sfx("menu")
         if clicked_action == "resume" and self.state_manager.current_state == GameState.PAUSED:
             self.state_manager.set_state(GameState.PLAYING)
         if (self.input_handler.menu_pressed() or clicked_action == "menu") and self.state_manager.current_state in (GameState.PAUSED, GameState.GAME_OVER):
@@ -255,7 +281,9 @@ class Game:
             self.restart_run()
         if clicked_action == "restart" and self.state_manager.current_state == GameState.GAME_OVER:
             self.restart_run()
-        if self.input_handler.pause_pressed():
+        if self.state_manager.current_state == GameState.SETTINGS and self.input_handler.pause_pressed():
+            self.state_manager.set_state(self.settings_return_state)
+        elif self.input_handler.pause_pressed():
             self.state_manager.toggle_pause()
 
     def update_player_name(self):
@@ -291,10 +319,13 @@ class Game:
                 return False
             self.player.invulnerability_timer = 1.0
             self.show_damage_tip(source)
+            self.audio.play_sfx("hit")
             return True
         damaged = self.player.damage()
-        if damaged and self.progression.sector == 1:
-            self.show_damage_tip(source)
+        if damaged:
+            self.audio.play_sfx("hit")
+            if self.progression.sector == 1:
+                self.show_damage_tip(source)
         return damaged
 
     def show_damage_tip(self, source):
@@ -313,6 +344,7 @@ class Game:
     def check_sector_exit(self):
         if self.player.get_position() == self.generator.exit:
             self.tutorial_objectives["exit"] = True
+            self.audio.play_level_up()
             self.progression.next_sector()
             self.save_manager.save({"sector": self.progression.sector})
             self.new_sector()
@@ -350,6 +382,8 @@ class Game:
         self.minimap.render(self.screen, self.grid, self.player, self.enemies)
         if self.state_manager.current_state == GameState.MENU:
             self.renderer.draw_menu(self.input_handler.keyboard_layout.move_label, self.player_name, self.high_score_entries, self.name_entry_active)
+        elif self.state_manager.current_state == GameState.SETTINGS:
+            self.renderer.draw_settings(self.audio.music_enabled, self.audio.sfx_enabled, self.audio.music_volume, self.audio.sfx_volume)
         elif self.state_manager.current_state == GameState.PAUSED:
             self.renderer.draw_pause()
         if self.state_manager.current_state == GameState.GAME_OVER:

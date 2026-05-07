@@ -60,10 +60,12 @@ python main.py
 - Q: quit the game
 - T: hide or show the first-sector tutorial
 
-Menu, pause, and game-over screens also include clickable buttons. The menu shows `Controls: ZQSD` for French/AZERTY Windows settings and `Controls: WASD` for English/QWERTY or German/QWERTZ settings.
+Menu, pause, and game-over screens also include clickable buttons. The menu shows `Controls: ZQSD` for French/AZERTY Windows settings and `Controls: WASD` for English/QWERTY.
 
 Before starting, click the player name field on the main menu and type your name. Scores are saved with that name.
-
+- In the main menu, open `SETTINGS` to mute or unmute background music and sound effects independently.
+- In `SETTINGS`, use the `+` and `-` buttons to adjust music and SFX volume.
+- The pause menu now also includes a `SETTINGS` button so you can adjust audio without leaving the game.
 ## Gameplay
 
 The goal is pure evasion. There is no direct combat. Survive as long as possible, reach the sector exit, and avoid hunters, hazards, and moving wall obstacles.
