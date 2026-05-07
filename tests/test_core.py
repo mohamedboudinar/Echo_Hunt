@@ -9,6 +9,7 @@ from generation.validator import TraversabilityValidator
 from entities.player import Player
 from engine.game import Game
 from engine.game_state import StateManager
+import engine.keyboard_layout as keyboard_layout_module
 from engine.input_handler import InputHandler
 from engine.keyboard_layout import KeyboardLayout
 from engine.high_scores import HighScoreManager
@@ -66,6 +67,44 @@ def test_keyboard_layout_labels_by_language():
     assert KeyboardLayout("fr").movement_labels["left"] == "Q"
 
 
+def test_keyboard_layout_uses_windows_input_language(monkeypatch):
+    monkeypatch.setattr(keyboard_layout_module.sys, "platform", "win32")
+    monkeypatch.setattr(
+        KeyboardLayout,
+        "_detect_windows_input_language",
+        staticmethod(lambda: "fr"),
+    )
+    monkeypatch.setattr(keyboard_layout_module.locale, "getlocale", lambda: ("de_DE", "UTF-8"))
+
+    layout = KeyboardLayout()
+
+    assert layout.name == "AZERTY"
+    assert layout.move_label == "ZQSD"
+
+
+def test_keyboard_layout_decodes_windows_langid():
+    assert KeyboardLayout._language_from_windows_langid(0x040C) == "fr"
+    assert KeyboardLayout._language_from_windows_langid(0x0407) == "de"
+    assert KeyboardLayout._language_from_windows_langid(0x0409) == "en"
+
+
+def test_keyboard_layout_refresh_updates_active_input_language(monkeypatch):
+    active_language = {"code": "en"}
+    monkeypatch.setattr(keyboard_layout_module.sys, "platform", "win32")
+    monkeypatch.setattr(
+        KeyboardLayout,
+        "_detect_windows_input_language",
+        staticmethod(lambda: active_language["code"]),
+    )
+    layout = KeyboardLayout()
+
+    active_language["code"] = "fr"
+    layout.refresh()
+
+    assert layout.name == "AZERTY"
+    assert layout.move_label == "ZQSD"
+
+
 def test_input_handler_accepts_arrow_keys_for_movement(monkeypatch):
     pressed = {
         pygame.K_UP: True,
@@ -79,6 +118,39 @@ def test_input_handler_accepts_arrow_keys_for_movement(monkeypatch):
     monkeypatch.setattr(pygame.key, "get_pressed", lambda: FakeKeys())
     handler = InputHandler()
     assert handler.movement_vector() == (0.7071, -0.7071)
+
+
+def test_azerty_left_key_does_not_request_quit(monkeypatch):
+    monkeypatch.setattr(
+        KeyboardLayout,
+        "_detect_windows_input_language",
+        staticmethod(lambda: "fr"),
+    )
+    monkeypatch.setattr(keyboard_layout_module.sys, "platform", "win32")
+    monkeypatch.setattr(
+        pygame.event,
+        "get",
+        lambda: [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_q, unicode="q", mod=0)],
+    )
+
+    handler = InputHandler()
+    handler.process_events()
+
+    assert not handler.quit_game_pressed()
+    assert handler.typed_text() == "q"
+
+
+def test_ctrl_q_requests_quit(monkeypatch):
+    monkeypatch.setattr(
+        pygame.event,
+        "get",
+        lambda: [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_q, unicode="", mod=pygame.KMOD_CTRL)],
+    )
+
+    handler = InputHandler()
+    handler.process_events()
+
+    assert handler.quit_game_pressed()
 
 
 def test_minimap_draws_explicit_exit_marker():

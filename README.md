@@ -50,17 +50,17 @@ python main.py
 ## Controls
 
 - Enter: start from menu, restart after game over
-- WASD, ZQSD, or Arrow Keys: move, depending on Windows language/keyboard layout
+- WASD, ZQSD, or Arrow Keys: move, depending on the active Windows typing/input language
 - Left Shift: sprint
 - Space: dash
 - Tab: maximize or minimize the minimap
 - Esc: pause or resume
 - R: restart after game over
 - M: return to main menu from pause or game over
-- Q: quit the game
+- Ctrl+Q: quit the game
 - T: hide or show the first-sector tutorial
 
-Menu, pause, and game-over screens also include clickable buttons. Use the `SHORTCUTS` button in the main or pause menu to view the full key list in-game, including the detected movement layout and arrow-key alternatives.
+Menu, pause, and game-over screens also include clickable buttons. Use the `SHORTCUTS` button in the main or pause menu to view the full key list in-game, including the detected Windows typing/input layout and arrow-key alternatives.
 
 Before starting, click the player name field on the main menu and type your name. Scores are saved with that name.
 - In the main menu, open `SETTINGS` to mute or unmute background music and sound effects independently.
@@ -128,7 +128,7 @@ Covered scenarios include:
 - A* no-path and invalid-grid cases
 - procedural sector traversability
 - dynamic obstacles preserving spawn, exit, and route validity
-- keyboard layout labels for French/AZERTY and English/German layouts
+- keyboard layout labels from the active Windows typing/input language, including French/AZERTY and English/German layouts
 - high-score sorting
 - dash stamina and cooldown behavior
 - damage invulnerability

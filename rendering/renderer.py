@@ -185,7 +185,7 @@ class Renderer:
         self.draw_button("start", "START RUN  [Enter]", (width // 2, 620), accent=(0, 255, 220))
         self.draw_button("shortcuts", "SHORTCUTS", (width // 2, 685), accent=(0, 255, 255))
         self.draw_button("settings", "SETTINGS", (width // 2, 750), accent=(255, 220, 80))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 815), accent=(255, 90, 120))
+        self.draw_button("quit", "QUIT GAME  [Ctrl+Q]", (width // 2, 815), accent=(255, 90, 120))
         self.draw_high_scores(high_scores or [], (70, 455))
 
     def draw_name_entry(self, player_name, center, active=False):
@@ -238,7 +238,7 @@ class Renderer:
         self.draw_button("shortcuts", "SHORTCUTS", (width // 2, 470), accent=(0, 255, 255))
         self.draw_button("settings", "SETTINGS", (width // 2, 550), accent=(255, 220, 80))
         self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 630), accent=(255, 220, 80))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 710), accent=(255, 90, 120))
+        self.draw_button("quit", "QUIT GAME  [Ctrl+Q]", (width // 2, 710), accent=(255, 90, 120))
 
     def draw_game_over(self, sector, survival_time, high_scores=None):
         self.button_rects = {}
@@ -251,7 +251,7 @@ class Renderer:
         self.draw_center_text("Lose condition: hearts reached zero.", 465, (255, 170, 180), 24)
         self.draw_button("restart", "RESTART  [Enter/R]", (width // 2, 550), accent=(0, 255, 220))
         self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 625), accent=(255, 220, 80))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 700), accent=(255, 90, 120))
+        self.draw_button("quit", "QUIT GAME  [Ctrl+Q]", (width // 2, 700), accent=(255, 90, 120))
         self.draw_high_scores(high_scores or [], (70, 455))
 
     def draw_settings(self, music_on, sfx_on, music_vol, sfx_vol):
@@ -322,7 +322,7 @@ class Renderer:
             ("T", "Hide or show the first-sector tutorial"),
             ("Enter", "Start a run or restart after game over"),
             ("M", "Return to main menu from pause or game over"),
-            ("Q", "Quit the game"),
+            ("Ctrl+Q", "Quit the game"),
         ]
         for index, (key, function) in enumerate(rows):
             y = panel.y + 88 + index * 38

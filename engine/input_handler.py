@@ -18,6 +18,7 @@ class InputHandler:
         self._backspace_requested = False
 
     def process_events(self):
+        self.keyboard_layout.refresh()
         self._dash_requested = False
         self._start_requested = False
         self._pause_requested = False
@@ -47,7 +48,7 @@ class InputHandler:
                     self._pause_requested = True
                 elif event.key == pygame.K_r:
                     self._restart_requested = True
-                elif event.key == pygame.K_q:
+                elif event.key == pygame.K_q and self._command_modifier_pressed(event):
                     self._quit_game_requested = True
                 elif event.key == pygame.K_m:
                     self._menu_requested = True
@@ -68,6 +69,10 @@ class InputHandler:
         if dx and dy:
             return dx * 0.7071, dy * 0.7071
         return dx, dy
+
+    @staticmethod
+    def _command_modifier_pressed(event):
+        return bool(getattr(event, "mod", 0) & pygame.KMOD_CTRL)
 
     def sprinting(self):
         return pygame.key.get_pressed()[pygame.K_LSHIFT]
