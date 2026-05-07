@@ -90,13 +90,14 @@ def test_dynamic_obstacles_move_without_blocking_route():
 
 
 class FakeInput:
-    def __init__(self, start=False, pause=False, restart=False, quit_game=False, menu=False, tutorial=False, typed_text="", backspace=False, mouse_click=None):
+    def __init__(self, start=False, pause=False, restart=False, quit_game=False, menu=False, tutorial=False, minimap=False, typed_text="", backspace=False, mouse_click=None):
         self.start = start
         self.pause = pause
         self.restart = restart
         self.quit_game = quit_game
         self.menu = menu
         self.tutorial = tutorial
+        self.minimap = minimap
         self.typed = typed_text
         self.backspace = backspace
         self.click = mouse_click
@@ -119,6 +120,9 @@ class FakeInput:
     def tutorial_toggle_pressed(self):
         return self.tutorial
 
+    def minimap_toggle_pressed(self):
+        return self.minimap
+
     def mouse_click(self):
         return self.click
 
@@ -139,14 +143,21 @@ class FakeRenderer:
         return self.clicked_action
 
 
+class FakeAudio:
+    def play_sfx(self, key):
+        pass
+
+
 class FakeGame:
     def __init__(self):
         self.state_manager = StateManager()
         self.restart_count = 0
         self.input_handler = FakeInput()
         self.renderer = FakeRenderer()
+        self.audio = FakeAudio()
         self.running = True
         self.tutorial_visible = True
+        self.minimap_maximized = False
         self.player_name = ""
         self.name_entry_active = False
 
@@ -211,6 +222,38 @@ def test_menu_name_entry_ignores_typing_until_clicked():
     fake.input_handler = FakeInput(typed_text="sam")
     Game.handle_state_input(fake)
     assert fake.player_name == ""
+
+
+def test_shortcuts_menu_opens_and_returns_to_menu():
+    fake = FakeGame()
+    fake.renderer = FakeRenderer("shortcuts")
+    fake.input_handler = FakeInput(mouse_click=(10, 10))
+    Game.handle_state_input(fake)
+    assert fake.state_manager.current_state == GameState.SHORTCUTS
+
+    fake.renderer = FakeRenderer("back")
+    Game.handle_state_input(fake)
+    assert fake.state_manager.current_state == GameState.MENU
+
+    fake.renderer = FakeRenderer()
+    fake.state_manager.set_state(GameState.SHORTCUTS)
+    fake.input_handler = FakeInput(pause=True)
+    Game.handle_state_input(fake)
+    assert fake.state_manager.current_state == GameState.MENU
+
+
+def test_minimap_toggle_only_during_play():
+    fake = FakeGame()
+    fake.input_handler = FakeInput(minimap=True)
+    Game.handle_state_input(fake)
+    assert not fake.minimap_maximized
+
+    fake.state_manager.set_state(GameState.PLAYING)
+    Game.handle_state_input(fake)
+    assert fake.minimap_maximized
+
+    Game.handle_state_input(fake)
+    assert not fake.minimap_maximized
 
 
 def test_level_one_damage_cannot_kill_player():

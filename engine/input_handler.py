@@ -12,6 +12,7 @@ class InputHandler:
         self._quit_game_requested = False
         self._menu_requested = False
         self._tutorial_toggle_requested = False
+        self._minimap_toggle_requested = False
         self._mouse_click = None
         self._typed_text = ""
         self._backspace_requested = False
@@ -24,6 +25,7 @@ class InputHandler:
         self._quit_game_requested = False
         self._menu_requested = False
         self._tutorial_toggle_requested = False
+        self._minimap_toggle_requested = False
         self._mouse_click = None
         self._typed_text = ""
         self._backspace_requested = False
@@ -51,6 +53,8 @@ class InputHandler:
                     self._menu_requested = True
                 elif event.key == pygame.K_t:
                     self._tutorial_toggle_requested = True
+                elif event.key == pygame.K_TAB:
+                    self._minimap_toggle_requested = True
 
     def movement_vector(self):
         keys = pygame.key.get_pressed()
@@ -84,6 +88,9 @@ class InputHandler:
 
     def tutorial_toggle_pressed(self):
         return self._tutorial_toggle_requested
+
+    def minimap_toggle_pressed(self):
+        return self._minimap_toggle_requested
 
     def mouse_click(self):
         return self._mouse_click

@@ -61,6 +61,7 @@ class Game:
         self.score_submitted = False
         self.survival_time = 0.0
         self.tutorial_visible = True
+        self.minimap_maximized = False
         self.damage_tip_timer = 0.0
         self.damage_tip_message = ""
         self.tutorial_objectives = self.create_tutorial_objectives()
@@ -133,6 +134,7 @@ class Game:
         self.progression = ProgressionSystem()
         self.survival_time = 0.0
         self.tutorial_visible = True
+        self.minimap_maximized = False
         self.damage_tip_timer = 0.0
         self.damage_tip_message = ""
         self.tutorial_objectives = self.create_tutorial_objectives()
@@ -149,6 +151,7 @@ class Game:
         self.progression = ProgressionSystem()
         self.survival_time = 0.0
         self.tutorial_visible = True
+        self.minimap_maximized = False
         self.name_entry_active = False
         self.damage_tip_timer = 0.0
         self.damage_tip_message = ""
@@ -244,6 +247,8 @@ class Game:
             return
         if self.input_handler.tutorial_toggle_pressed():
             self.tutorial_visible = not self.tutorial_visible
+        if self.input_handler.minimap_toggle_pressed() and self.state_manager.current_state == GameState.PLAYING:
+            self.minimap_maximized = not self.minimap_maximized
 
         if self.input_handler.start_pressed():
             if self.state_manager.current_state == GameState.MENU:
@@ -255,6 +260,9 @@ class Game:
         if clicked_action == "settings" and self.state_manager.current_state in (GameState.MENU, GameState.PAUSED):
             self.settings_return_state = self.state_manager.current_state
             self.state_manager.set_state(GameState.SETTINGS)
+            self.audio.play_sfx("menu")
+        if clicked_action == "shortcuts" and self.state_manager.current_state == GameState.MENU:
+            self.state_manager.set_state(GameState.SHORTCUTS)
             self.audio.play_sfx("menu")
         if clicked_action == "toggle_music" and self.state_manager.current_state == GameState.SETTINGS:
             self.audio.play_sfx("menu")
@@ -273,6 +281,9 @@ class Game:
         if clicked_action == "back" and self.state_manager.current_state == GameState.SETTINGS:
             self.state_manager.set_state(self.settings_return_state)
             self.audio.play_sfx("menu")
+        if clicked_action == "back" and self.state_manager.current_state == GameState.SHORTCUTS:
+            self.state_manager.set_state(GameState.MENU)
+            self.audio.play_sfx("menu")
         if clicked_action == "resume" and self.state_manager.current_state == GameState.PAUSED:
             self.state_manager.set_state(GameState.PLAYING)
         if (self.input_handler.menu_pressed() or clicked_action == "menu") and self.state_manager.current_state in (GameState.PAUSED, GameState.GAME_OVER):
@@ -283,6 +294,8 @@ class Game:
             self.restart_run()
         if self.state_manager.current_state == GameState.SETTINGS and self.input_handler.pause_pressed():
             self.state_manager.set_state(self.settings_return_state)
+        elif self.state_manager.current_state == GameState.SHORTCUTS and self.input_handler.pause_pressed():
+            self.state_manager.set_state(GameState.MENU)
         elif self.input_handler.pause_pressed():
             self.state_manager.toggle_pause()
 
@@ -384,11 +397,19 @@ class Game:
             self.renderer.draw_tutorial(self.progression.sector, self.survival_time, self.tutorial_objectives, self.input_handler.keyboard_layout)
         if self.state_manager.current_state == GameState.PLAYING:
             self.renderer.draw_damage_tip(self.damage_tip_message, self.damage_tip_timer)
-        self.minimap.render(self.screen, self.grid, self.player, self.enemies)
+        self.minimap.render(
+            self.screen,
+            self.grid,
+            self.player,
+            self.enemies,
+            maximized=self.minimap_maximized and self.state_manager.current_state == GameState.PLAYING,
+        )
         if self.state_manager.current_state == GameState.MENU:
             self.renderer.draw_menu(self.input_handler.keyboard_layout.move_label, self.player_name, self.high_score_entries, self.name_entry_active)
         elif self.state_manager.current_state == GameState.SETTINGS:
             self.renderer.draw_settings(self.audio.music_enabled, self.audio.sfx_enabled, self.audio.music_volume, self.audio.sfx_volume)
+        elif self.state_manager.current_state == GameState.SHORTCUTS:
+            self.renderer.draw_shortcuts(self.input_handler.keyboard_layout.move_label)
         elif self.state_manager.current_state == GameState.PAUSED:
             self.renderer.draw_pause()
         if self.state_manager.current_state == GameState.GAME_OVER:

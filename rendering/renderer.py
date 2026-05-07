@@ -176,16 +176,16 @@ class Renderer:
         self.draw_menu_animation()
         width, _ = self.screen.get_size()
         pygame.draw.line(self.screen, (255, 80, 165), (width // 2 - 300, 190), (width // 2 + 300, 190), 3)
-        pygame.draw.line(self.screen, (0, 255, 255), (width // 2 - 220, 850), (width // 2 + 220, 850), 2)
+        pygame.draw.line(self.screen, (0, 255, 255), (width // 2 - 220, 875), (width // 2 + 220, 875), 2)
         self.draw_center_text("ECHO HUNT", 245, (0, 255, 255), 80)
         self.draw_center_text("A* SMART PURSUIT SURVIVAL", 325, (255, 110, 175), 30)
         self.draw_center_text("Reach the green EXIT. Avoid hunters, red hazards, and moving walls.", 382, (235, 245, 255), 24)
         self.draw_center_text("You win a sector by escaping. You lose when your hearts reach zero.", 426, (255, 220, 80), 24)
         self.draw_name_entry(player_name, (width // 2, 535), name_active)
-        self.draw_button("start", "START RUN  [Enter]", (width // 2, 645), accent=(0, 255, 220))
-        self.draw_button("settings", "SETTINGS", (width // 2, 710), accent=(255, 220, 80))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 780), accent=(255, 90, 120))
-        self.draw_center_text(f"Controls: {move_label} move | Shift sprint | Space dash | Esc pause | T tutorial", 920, (210, 230, 255), 21)
+        self.draw_button("start", "START RUN  [Enter]", (width // 2, 620), accent=(0, 255, 220))
+        self.draw_button("shortcuts", "SHORTCUTS", (width // 2, 685), accent=(0, 255, 255))
+        self.draw_button("settings", "SETTINGS", (width // 2, 750), accent=(255, 220, 80))
+        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 815), accent=(255, 90, 120))
         self.draw_high_scores(high_scores or [], (70, 455))
 
     def draw_name_entry(self, player_name, center, active=False):
@@ -272,13 +272,56 @@ class Renderer:
         self.draw_button("back", "BACK TO MENU  [Esc]", (width // 2, 940), accent=(255, 90, 120))
         self.draw_text("Click the buttons to mute/unmute audio and change volume.", (width // 2 - 430, 1000), (235, 245, 255))
 
+    def draw_shortcuts(self, move_label="WASD"):
+        self.button_rects = {}
+        self.draw_overlay(205)
+        self.draw_synth_noise(46)
+        width, _ = self.screen.get_size()
+        self.draw_center_text("SHORTCUTS", 225, (0, 255, 255), 72)
+
+        panel = pygame.Rect(0, 0, 820, 540)
+        panel.center = (width // 2, 560)
+        pygame.draw.rect(self.screen, (8, 14, 28), panel, border_radius=8)
+        pygame.draw.rect(self.screen, (0, 255, 220), panel, width=2, border_radius=8)
+
+        header_font = pygame.font.SysFont("consolas", 24, bold=True)
+        key_font = pygame.font.SysFont("consolas", 22, bold=True)
+        text_font = pygame.font.SysFont("consolas", 22)
+        key_header = header_font.render("KEY", True, (255, 220, 80))
+        function_header = header_font.render("FUNCTION", True, (255, 220, 80))
+        self.screen.blit(key_header, (panel.x + 54, panel.y + 32))
+        self.screen.blit(function_header, (panel.x + 255, panel.y + 32))
+        pygame.draw.line(self.screen, (255, 80, 165), (panel.x + 42, panel.y + 72), (panel.right - 42, panel.y + 72), 2)
+
+        rows = [
+            (move_label, "Move through the sector"),
+            ("Left Shift", "Sprint while stamina is available"),
+            ("Space", "Dash in the current movement direction"),
+            ("Tab", "Maximize or minimize the minimap"),
+            ("Esc", "Pause, resume, or go back"),
+            ("T", "Hide or show the first-sector tutorial"),
+            ("Enter", "Start a run or restart after game over"),
+            ("M", "Return to main menu from pause or game over"),
+            ("Q", "Quit the game"),
+        ]
+        for index, (key, function) in enumerate(rows):
+            y = panel.y + 98 + index * 44
+            if index % 2 == 0:
+                pygame.draw.rect(self.screen, (13, 22, 42), (panel.x + 30, y - 9, panel.width - 60, 34), border_radius=5)
+            key_surface = key_font.render(key, True, (0, 255, 220))
+            function_surface = text_font.render(function, True, (235, 245, 255))
+            self.screen.blit(key_surface, (panel.x + 54, y))
+            self.screen.blit(function_surface, (panel.x + 255, y))
+
+        self.draw_button("back", "BACK TO MENU  [Esc]", (width // 2, 900), accent=(255, 90, 120))
+
     def draw_objective_box(self, move_label="WASD", sector=1):
         rect = pygame.Rect(20, 15, 980, 118)
         pygame.draw.rect(self.screen, (8, 14, 28), rect, border_radius=6)
         pygame.draw.rect(self.screen, (0, 255, 220), rect, width=2, border_radius=6)
         self.draw_text(f"Level {sector}: reach the bright green EXIT tile.", (35, 28), (80, 255, 175))
         self.draw_text("Hunters block your route. Avoid red hazards and moving walls.", (35, 53), (255, 215, 220))
-        self.draw_text(f"Controls: {move_label} move | Shift sprint | Space dash | Esc pause.", (35, 78), (235, 245, 255))
+        self.draw_text(f"Controls: {move_label} move | Shift sprint | Space dash | Tab map | Esc pause.", (35, 78), (235, 245, 255))
         self.draw_text("Lose: hearts reach 0. Level 1 teaches damage without killing you.", (35, 103), (255, 220, 80))
 
     def draw_tutorial(self, sector, survival_time, objectives=None, keyboard_layout=None):

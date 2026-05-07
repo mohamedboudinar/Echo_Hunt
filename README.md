@@ -54,13 +54,14 @@ python main.py
 - WASD or ZQSD: move, depending on Windows language/keyboard layout
 - Left Shift: sprint
 - Space: dash
+- Tab: maximize or minimize the minimap
 - Esc: pause or resume
 - R: restart after game over
 - M: return to main menu from pause or game over
 - Q: quit the game
 - T: hide or show the first-sector tutorial
 
-Menu, pause, and game-over screens also include clickable buttons. The menu shows `Controls: ZQSD` for French/AZERTY Windows settings and `Controls: WASD` for English/QWERTY.
+Menu, pause, and game-over screens also include clickable buttons. Use the main menu `SHORTCUTS` button to view the full key list in-game, including the detected movement layout.
 
 Before starting, click the player name field on the main menu and type your name. Scores are saved with that name.
 - In the main menu, open `SETTINGS` to mute or unmute background music and sound effects independently.
@@ -75,7 +76,7 @@ The screen displays:
 - enemy A* paths in real time
 - enemy state, explored nodes, path length, and recalculation interval
 - threat level
-- hearts, stamina, sector, timer, FPS, and minimap
+- hearts, stamina, sector, timer, FPS, and a toggleable minimap
 - first-sector tutorial hints
 - a first-level safety tutorial: hunters and hazards can hurt you and show coaching tips, but they cannot kill you before level 2
 - synthwave scanline/noise effect for arcade atmosphere

@@ -5,5 +5,6 @@ class GameState(Enum):
     PLAYING = auto()
     PAUSED = auto()
     SETTINGS = auto()
+    SHORTCUTS = auto()
     GAME_OVER = auto()
     VICTORY = auto()
