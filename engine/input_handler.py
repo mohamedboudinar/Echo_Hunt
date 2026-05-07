@@ -59,8 +59,12 @@ class InputHandler:
     def movement_vector(self):
         keys = pygame.key.get_pressed()
         bindings = self.keyboard_layout.bindings
-        dx = int(keys[bindings["right"]]) - int(keys[bindings["left"]])
-        dy = int(keys[bindings["down"]]) - int(keys[bindings["up"]])
+        left = keys[bindings["left"]] or keys[pygame.K_LEFT]
+        right = keys[bindings["right"]] or keys[pygame.K_RIGHT]
+        up = keys[bindings["up"]] or keys[pygame.K_UP]
+        down = keys[bindings["down"]] or keys[pygame.K_DOWN]
+        dx = int(right) - int(left)
+        dy = int(down) - int(up)
         if dx and dy:
             return dx * 0.7071, dy * 0.7071
         return dx, dy

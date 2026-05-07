@@ -51,7 +51,7 @@ python main.py
 ## Controls
 
 - Enter: start from menu, restart after game over
-- WASD or ZQSD: move, depending on Windows language/keyboard layout
+- WASD, ZQSD, or Arrow Keys: move, depending on Windows language/keyboard layout
 - Left Shift: sprint
 - Space: dash
 - Tab: maximize or minimize the minimap
@@ -61,7 +61,7 @@ python main.py
 - Q: quit the game
 - T: hide or show the first-sector tutorial
 
-Menu, pause, and game-over screens also include clickable buttons. Use the main menu `SHORTCUTS` button to view the full key list in-game, including the detected movement layout.
+Menu, pause, and game-over screens also include clickable buttons. Use the `SHORTCUTS` button in the main or pause menu to view the full key list in-game, including the detected movement layout and arrow-key alternatives.
 
 Before starting, click the player name field on the main menu and type your name. Scores are saved with that name.
 - In the main menu, open `SETTINGS` to mute or unmute background music and sound effects independently.

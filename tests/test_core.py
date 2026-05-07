@@ -1,3 +1,5 @@
+import pygame
+
 from ai.heuristic import Heuristic
 from ai.astar import AStar
 from generation.tilemap import TileType
@@ -7,8 +9,10 @@ from generation.validator import TraversabilityValidator
 from entities.player import Player
 from engine.game import Game
 from engine.game_state import StateManager
+from engine.input_handler import InputHandler
 from engine.keyboard_layout import KeyboardLayout
 from engine.high_scores import HighScoreManager
+from ui.minimap import Minimap
 from constants import GameState
 
 
@@ -58,6 +62,37 @@ def test_keyboard_layout_labels_by_language():
     assert KeyboardLayout("en").move_label == "WASD"
     assert KeyboardLayout("de").move_label == "WASD"
     assert KeyboardLayout("de").name == "QWERTZ"
+    assert KeyboardLayout("en").movement_labels["up"] == "W"
+    assert KeyboardLayout("fr").movement_labels["left"] == "Q"
+
+
+def test_input_handler_accepts_arrow_keys_for_movement(monkeypatch):
+    pressed = {
+        pygame.K_UP: True,
+        pygame.K_RIGHT: True,
+    }
+
+    class FakeKeys:
+        def __getitem__(self, key):
+            return pressed.get(key, False)
+
+    monkeypatch.setattr(pygame.key, "get_pressed", lambda: FakeKeys())
+    handler = InputHandler()
+    assert handler.movement_vector() == (0.7071, -0.7071)
+
+
+def test_minimap_draws_explicit_exit_marker():
+    surface = pygame.Surface((120, 120))
+    grid = [
+        [TileType.FLOOR, TileType.FLOOR, TileType.FLOOR],
+        [TileType.FLOOR, TileType.FLOOR, TileType.FLOOR],
+        [TileType.FLOOR, TileType.FLOOR, TileType.FLOOR],
+    ]
+    player = type("Player", (), {"grid_x": 0, "grid_y": 0})()
+
+    Minimap().render(surface, grid, player, [], exit_position=(2, 1), x=10, y=10, scale=10)
+
+    assert surface.get_at((35, 25))[:3] == (80, 255, 175)
 
 
 def test_hazard_damage_respects_invulnerability():
@@ -155,6 +190,7 @@ class FakeGame:
         self.input_handler = FakeInput()
         self.renderer = FakeRenderer()
         self.audio = FakeAudio()
+        self.shortcuts_return_state = GameState.MENU
         self.running = True
         self.tutorial_visible = True
         self.minimap_maximized = False
@@ -237,9 +273,24 @@ def test_shortcuts_menu_opens_and_returns_to_menu():
 
     fake.renderer = FakeRenderer()
     fake.state_manager.set_state(GameState.SHORTCUTS)
+    fake.shortcuts_return_state = GameState.MENU
     fake.input_handler = FakeInput(pause=True)
     Game.handle_state_input(fake)
     assert fake.state_manager.current_state == GameState.MENU
+
+
+def test_shortcuts_menu_returns_to_pause_when_opened_from_pause():
+    fake = FakeGame()
+    fake.state_manager.set_state(GameState.PAUSED)
+    fake.renderer = FakeRenderer("shortcuts")
+    fake.input_handler = FakeInput(mouse_click=(10, 10))
+    Game.handle_state_input(fake)
+    assert fake.state_manager.current_state == GameState.SHORTCUTS
+    assert fake.shortcuts_return_state == GameState.PAUSED
+
+    fake.renderer = FakeRenderer("back")
+    Game.handle_state_input(fake)
+    assert fake.state_manager.current_state == GameState.PAUSED
 
 
 def test_minimap_toggle_only_during_play():

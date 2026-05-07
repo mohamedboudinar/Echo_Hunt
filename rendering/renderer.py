@@ -222,11 +222,12 @@ class Renderer:
         self.draw_overlay(175)
         self.draw_synth_noise(34)
         width, _ = self.screen.get_size()
-        self.draw_center_text("PAUSED", 330, (255, 220, 80), 58)
-        self.draw_button("resume", "RESUME  [Esc]", (width // 2, 420), accent=(0, 255, 220))
-        self.draw_button("settings", "SETTINGS", (width // 2, 500), accent=(255, 220, 80))
-        self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 580), accent=(255, 220, 80))
-        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 660), accent=(255, 90, 120))
+        self.draw_center_text("PAUSED", 300, (255, 220, 80), 58)
+        self.draw_button("resume", "RESUME  [Esc]", (width // 2, 390), accent=(0, 255, 220))
+        self.draw_button("shortcuts", "SHORTCUTS", (width // 2, 470), accent=(0, 255, 255))
+        self.draw_button("settings", "SETTINGS", (width // 2, 550), accent=(255, 220, 80))
+        self.draw_button("menu", "MAIN MENU  [M]", (width // 2, 630), accent=(255, 220, 80))
+        self.draw_button("quit", "QUIT GAME  [Q]", (width // 2, 710), accent=(255, 90, 120))
 
     def draw_game_over(self, sector, survival_time, high_scores=None):
         self.button_rects = {}
@@ -272,7 +273,7 @@ class Renderer:
         self.draw_button("back", "BACK TO MENU  [Esc]", (width // 2, 940), accent=(255, 90, 120))
         self.draw_text("Click the buttons to mute/unmute audio and change volume.", (width // 2 - 430, 1000), (235, 245, 255))
 
-    def draw_shortcuts(self, move_label="WASD"):
+    def draw_shortcuts(self, keyboard_layout=None):
         self.button_rects = {}
         self.draw_overlay(205)
         self.draw_synth_noise(46)
@@ -293,8 +294,16 @@ class Renderer:
         self.screen.blit(function_header, (panel.x + 255, panel.y + 32))
         pygame.draw.line(self.screen, (255, 80, 165), (panel.x + 42, panel.y + 72), (panel.right - 42, panel.y + 72), 2)
 
+        movement_labels = getattr(
+            keyboard_layout,
+            "movement_labels",
+            {"up": "W", "left": "A", "down": "S", "right": "D"},
+        )
         rows = [
-            (move_label, "Move through the sector"),
+            (f"{movement_labels['up']} / Up Arrow", "Move forward"),
+            (f"{movement_labels['down']} / Down Arrow", "Move backward"),
+            (f"{movement_labels['left']} / Left Arrow", "Move left"),
+            (f"{movement_labels['right']} / Right Arrow", "Move right"),
             ("Left Shift", "Sprint while stamina is available"),
             ("Space", "Dash in the current movement direction"),
             ("Tab", "Maximize or minimize the minimap"),
@@ -305,7 +314,7 @@ class Renderer:
             ("Q", "Quit the game"),
         ]
         for index, (key, function) in enumerate(rows):
-            y = panel.y + 98 + index * 44
+            y = panel.y + 88 + index * 38
             if index % 2 == 0:
                 pygame.draw.rect(self.screen, (13, 22, 42), (panel.x + 30, y - 9, panel.width - 60, 34), border_radius=5)
             key_surface = key_font.render(key, True, (0, 255, 220))
