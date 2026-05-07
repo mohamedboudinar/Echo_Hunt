@@ -210,6 +210,9 @@ class FakeGame:
     def update_player_name(self):
         Game.update_player_name(self)
 
+    def ensure_default_player_name(self):
+        Game.ensure_default_player_name(self)
+
     def show_damage_tip(self, source):
         Game.show_damage_tip(self, source)
 
@@ -258,6 +261,47 @@ def test_menu_name_entry_ignores_typing_until_clicked():
     fake.input_handler = FakeInput(typed_text="sam")
     Game.handle_state_input(fake)
     assert fake.player_name == ""
+
+
+def test_empty_name_becomes_player_when_field_loses_focus():
+    fake = FakeGame()
+    fake.renderer = FakeRenderer("name")
+    fake.input_handler = FakeInput(mouse_click=(10, 10))
+    Game.handle_state_input(fake)
+    assert fake.name_entry_active
+    assert fake.player_name == ""
+
+    fake.renderer = FakeRenderer(None)
+    fake.input_handler = FakeInput(mouse_click=(700, 700))
+    Game.handle_state_input(fake)
+    assert not fake.name_entry_active
+    assert fake.player_name == "PLAYER"
+
+
+def test_clicking_default_name_clears_field_for_typing():
+    fake = FakeGame()
+    fake.player_name = "PLAYER"
+    fake.renderer = FakeRenderer("name")
+    fake.input_handler = FakeInput(mouse_click=(10, 10))
+    Game.handle_state_input(fake)
+    assert fake.name_entry_active
+    assert fake.player_name == ""
+
+
+def test_q_quits_menu_when_name_field_is_not_active():
+    fake = FakeGame()
+    fake.input_handler = FakeInput(quit_game=True, typed_text="q")
+    Game.handle_state_input(fake)
+    assert not fake.running
+
+
+def test_q_types_when_name_field_is_active():
+    fake = FakeGame()
+    fake.name_entry_active = True
+    fake.input_handler = FakeInput(quit_game=True, typed_text="q")
+    Game.handle_state_input(fake)
+    assert fake.running
+    assert fake.player_name == "Q"
 
 
 def test_shortcuts_menu_opens_and_returns_to_menu():

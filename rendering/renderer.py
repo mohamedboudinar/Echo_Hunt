@@ -198,7 +198,7 @@ class Renderer:
         title = "PLAYER NAME - typing..." if active else "CLICK HERE TO TYPE PLAYER NAME"
         title_surface = pygame.font.SysFont('consolas', 18, bold=True).render(title, True, border)
         self.screen.blit(title_surface, (rect.x + 18, rect.y + 8))
-        shown_name = player_name or "PLAYER"
+        shown_name = player_name
         if active and pygame.time.get_ticks() % 900 < 450:
             shown_name += "_"
         label = pygame.font.SysFont('consolas', 30, bold=True).render(shown_name, True, (245, 250, 255))
@@ -210,12 +210,23 @@ class Renderer:
         pygame.draw.rect(self.screen, (8, 14, 28), rect, border_radius=8)
         pygame.draw.rect(self.screen, (0, 255, 220), rect, width=2, border_radius=8)
         self.draw_text("HIGH SCORES", (x + 18, y + 16), (255, 220, 80))
+        header_font = pygame.font.SysFont("consolas", 18, bold=True)
+        row_font = pygame.font.SysFont("consolas", 18)
+        headers = [("Player Name", x + 18), ("Level", x + 205), ("Time", x + 300)]
+        for label, header_x in headers:
+            self.screen.blit(header_font.render(label, True, (0, 255, 220)), (header_x, y + 50))
+        pygame.draw.line(self.screen, (255, 80, 165), (x + 16, y + 76), (rect.right - 16, y + 76), 1)
         if not scores:
-            self.draw_text("No runs yet.", (x + 18, y + 52), (235, 245, 255))
+            self.screen.blit(row_font.render("No runs yet.", True, (235, 245, 255)), (x + 18, y + 92))
             return
         for index, score in enumerate(scores[:6], start=1):
-            text = f"{index}. {score['name'][:10]:<10} L{score['max_level']}  {score['survival_time']:>5.1f}s"
-            self.draw_text(text, (x + 18, y + 24 + index * 30), (235, 245, 255))
+            row_y = y + 62 + index * 26
+            name = f"{index}. {score['name'][:12]}"
+            level = f"{score['max_level']}"
+            time = f"{score['survival_time']:0.1f}s"
+            self.screen.blit(row_font.render(name, True, (235, 245, 255)), (x + 18, row_y))
+            self.screen.blit(row_font.render(level, True, (235, 245, 255)), (x + 220, row_y))
+            self.screen.blit(row_font.render(time, True, (235, 245, 255)), (x + 300, row_y))
 
     def draw_pause(self):
         self.button_rects = {}

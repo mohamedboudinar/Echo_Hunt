@@ -132,6 +132,7 @@ class Game:
             self.enemies.append(extra)
 
     def start_new_run(self):
+        self.ensure_default_player_name()
         self.progression = ProgressionSystem()
         self.survival_time = 0.0
         self.tutorial_visible = True
@@ -239,11 +240,16 @@ class Game:
     def handle_state_input(self):
         clicked_action = self.renderer.clicked_button(self.input_handler.mouse_click())
         if self.state_manager.current_state == GameState.MENU and self.input_handler.mouse_click() is not None:
+            was_name_entry_active = self.name_entry_active
             self.name_entry_active = clicked_action == "name"
+            if was_name_entry_active and not self.name_entry_active:
+                self.ensure_default_player_name()
+            elif self.name_entry_active and self.player_name == "PLAYER":
+                self.player_name = ""
         self.update_player_name()
         is_menu = self.state_manager.current_state == GameState.MENU
-        typed_this_frame = bool(self.input_handler.typed_text())
-        if (self.input_handler.quit_game_pressed() and (not is_menu or not typed_this_frame)) or clicked_action == "quit":
+        name_entry_is_receiving_text = is_menu and self.name_entry_active and bool(self.input_handler.typed_text())
+        if (self.input_handler.quit_game_pressed() and not name_entry_is_receiving_text) or clicked_action == "quit":
             self.running = False
             return
         if self.input_handler.tutorial_toggle_pressed():
@@ -314,6 +320,10 @@ class Game:
             if char.isalnum() or char in (" ", "_", "-"):
                 self.player_name += char.upper()
         self.player_name = self.player_name[:12]
+
+    def ensure_default_player_name(self):
+        if not self.player_name.strip():
+            self.player_name = "PLAYER"
 
     def check_enemy_collisions(self):
         for enemy in self.enemies:
